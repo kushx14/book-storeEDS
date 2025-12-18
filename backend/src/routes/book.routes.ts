@@ -90,6 +90,18 @@ router.get('/my/books', authMiddleware, async (req, res) => {
   const bought = await Book.find({ boughtBy: { $in: [userId] } });
   const rented = await Book.find({ 'rentedBy.user': userId });
 
+  const now = new Date();
+  for (const book of rented) {
+    const rentIndex = book.rentedBy.findIndex((r: any) => r.user.toString() === userId);
+    if (rentIndex !== -1) {
+      const rent = book.rentedBy[rentIndex];
+      if (rent.rentUntil && new Date(rent.rentUntil) < now) {
+        rent.rentUntil = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+        await book.save();
+      }
+    }
+  }
+
   res.json({ published, bought, rented });
 });
 
