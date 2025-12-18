@@ -44,12 +44,12 @@ router.post('/:id/buy', authMiddleware, async (req, res) => {
   const book = await Book.findById(req.params.id);
 
   if (!book) return res.status(404).json({ message: 'Book not found' });
-  if (book.boughtBy) return res.status(400).json({ message: 'Already bought' });
+  if (book.copiesAvailable <= 0)
+    return res.status(400).json({ message: 'Not available' });
   if (book.owner!.toString() === (req as any).user.id) return res.status(400).json({ message: 'Cannot buy your own book' });
 
-  book.boughtBy = (req as any).user.id;
-  book.rentedBy = null;
-  book.rentUntil = null;
+  book.copiesAvailable -= 1;
+  book.boughtBy.push((req as any).user.id);
 
   await book.save();
   res.json(book);
@@ -63,15 +63,18 @@ router.post('/:id/rent', authMiddleware, async (req, res) => {
   const book = await Book.findById(req.params.id);
 
   if (!book) return res.status(404).json({ message: 'Book not found' });
-  if (book.boughtBy || book.rentedBy)
-    return res.status(400).json({ message: 'Book unavailable' });
+  if (book.copiesAvailable <= 0)
+    return res.status(400).json({ message: 'Not available' });
   if (book.owner!.toString() === (req as any).user.id) return res.status(400).json({ message: 'Cannot rent your own book' });
 
   const rentUntil = new Date();
   rentUntil.setDate(rentUntil.getDate() + days);
 
-  book.rentedBy = (req as any).user.id;
-  book.rentUntil = rentUntil;
+  book.copiesAvailable -= 1;
+  book.rentedBy.push({
+    user: (req as any).user.id,
+    rentUntil
+  });
 
   await book.save();
   res.json(book);
@@ -84,8 +87,8 @@ router.get('/my/books', authMiddleware, async (req, res) => {
   const userId = (req as any).user.id;
 
   const published = await Book.find({ owner: userId });
-  const bought = await Book.find({ boughtBy: userId });
-  const rented = await Book.find({ rentedBy: userId });
+  const bought = await Book.find({ boughtBy: { $in: [userId] } });
+  const rented = await Book.find({ 'rentedBy.user': userId });
 
   res.json({ published, bought, rented });
 });
@@ -94,14 +97,14 @@ router.get('/my/books', authMiddleware, async (req, res) => {
  * PROTECTED → ADD BOOK
  */
 router.post('/', authMiddleware, upload.single('image'), async (req, res) => {
-  const { title, author, overview, rating } = req.body;
+  const { title, author, overview, copiesAvailable } = req.body;
   const image = req.file ? `/uploads/${req.file.filename}` : '';
 
   const book = await Book.create({
     title,
     author,
     overview,
-    rating: Number(rating),
+    copiesAvailable: Number(copiesAvailable),
     image,
     owner: (req as any).user.id
   });
