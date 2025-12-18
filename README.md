@@ -30,12 +30,22 @@ The project demonstrates frontend–backend integration, state management using 
 
 ## 📖 Features
 - User Login
+- <img width="2564" height="1468" alt="image" src="https://github.com/user-attachments/assets/e45041a2-a1fc-4925-b97c-860c6e642916" />
+
 - Book Library (view all books)
+- <img width="2690" height="1513" alt="image" src="https://github.com/user-attachments/assets/6bf02374-b3ac-41b3-a7ab-2c10889c3565" />
+
 - Book Details page
 - Add Book with inventory count
+- <img width="2866" height="1513" alt="image" src="https://github.com/user-attachments/assets/d497d6da-772f-44e4-87b5-832a13e8ad1e" />
+
 - Buy & Rent books
+  <img width="2878" height="1308" alt="image" src="https://github.com/user-attachments/assets/13db6583-5924-4e54-88a4-c09557e0e061" />
+
 - Cart & Checkout
 - User Profile (published, bought, rented books)
+  <img width="1516" height="1524" alt="image" src="https://github.com/user-attachments/assets/a2346b82-f9b8-402f-ab6d-c6453aa47626" />
+
 
 ---
 
